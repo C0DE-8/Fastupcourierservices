@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Get Package by ID</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial; padding: 2rem; background: #f0f2f5; }
+    input { padding: 10px; width: 200px; }
+    button { padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 5px; }
+    pre { background: #fff; padding: 1rem; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h2>Get Package by ID</h2>
+  <input id="pid" placeholder="Enter package ID" />
+  <button onclick="fetchPackage()">Fetch</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function fetchPackage() {
+      const id = document.getElementById('pid').value;
+      const res = await fetch(`https://shipper.api.anmut.pro/api/packages/${id}`, {
+        headers: { Authorization: 'Bearer ' + localStorage.token }
+      });
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

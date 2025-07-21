@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Update Package | FastUp Courier Services</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4f46e5; /* Indigo 600 */
+      --primary-dark: #4338ca; /* Indigo 700 */
+      --background-light: #f8fafc; /* Gray 50 */
+      --background-medium: #e2e8f0; /* Gray 200 */
+      --text-color: #1e293b; /* Slate 800 */
+      --text-light: #64748b; /* Slate 500 */
+      --card-background: #ffffff;
+      --border-color: #e2e8f0; /* Slate 200 */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --success-color: #22c55e; /* Green 500 */
+      --error-color: #ef4444; /* Red 500 */
+      --delete-color: #dc2626; /* Red 600 */
+      --delete-dark: #b91c1c; /* Red 700 */
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-light);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: var(--text-color);
+      overflow: hidden; /* Hide scrollbar during preloader */
+    }
+
+    /* Preloader Styles */
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--background-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out;
+      opacity: 1;
+    }
+
+    #preloader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      border: 4px solid var(--background-medium);
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Header Styles */
+    .header {
+      background-color: var(--card-background);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header .logo {
+      display: flex;
+      align-items: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .header .logo svg {
+      margin-right: 0.5rem;
+      color: var(--primary-color);
+    }
+
+    .header .logout-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .header .logout-btn:hover {
+      background-color: var(--background-medium);
+      color: var(--text-color);
+    }
+
+    /* Main Content Styles */
+    .container {
+      flex-grow: 1;
+      max-width: 650px;
+      margin: 2rem auto;
+      background: var(--card-background);
+      padding: 2rem;
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: var(--text-color);
+    }
+
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+    }
+
+    .top-controls .back-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      text-decoration: none; /* For anchor tag */
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .top-controls .back-btn:hover {
+      background-color: var(--background-medium);
+      color: var(--text-color);
+    }
+
+    .top-controls .search-input {
+      flex-grow: 1;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      border: 1px solid var(--border-color);
+      background-color: var(--background-light);
+      font-size: 1rem;
+      color: var(--text-color);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .top-controls .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      width: calc(100% - 1.5rem); /* Account for padding */
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      border: 1px solid var(--border-color);
+      background-color: var(--background-light);
+      font-size: 1rem;
+      color: var(--text-color);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background-color 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: var(--primary-dark);
+    }
+
+    .btn:disabled {
+      background-color: var(--background-medium);
+      color: var(--text-light);
+      cursor: not-allowed;
+    }
+
+    .btn.delete-btn {
+      background-color: var(--delete-color);
+    }
+
+    .btn.delete-btn:hover:not(:disabled) {
+      background-color: var(--delete-dark);
+    }
+
+    .btn .loader {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    }
+
+    .modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--card-background);
+      padding: 2rem;
+      border-radius: 0.75rem;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      transform: translateY(-20px);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .modal.show .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-content p {
+      margin-bottom: 1.5rem;
+      font-size: 1.125rem;
+      color: var(--text-color);
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .modal-buttons button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .modal-buttons .confirm-btn {
+      background-color: var(--delete-color);
+      color: white;
+      border: none;
+    }
+
+    .modal-buttons .confirm-btn:hover {
+      background-color: var(--delete-dark);
+    }
+
+    .modal-buttons .cancel-btn {
+      background-color: var(--background-medium);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .modal-buttons .cancel-btn:hover {
+      background-color: var(--border-color);
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      display: none;
+      z-index: 2000;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    #toast.show {
+      opacity: 1;
+    }
+
+    #toast.success {
+      background-color: var(--success-color);
+    }
+
+    #toast.error {
+      background-color: var(--error-color);
+    }
+
+    /* Footer Styles */
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: auto;
+      color: var(--text-light);
+      font-size: 0.875rem;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--card-background);
+    }
+  </style>
+</head>
+<body>
+  <div id="preloader">
+    <div class="spinner"></div>
+  </div>
+
+  <header class="header">
+    <a href="dashboard.html" class="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package-2">
+        <path d="M16.46 8.9L7.54 1.1A2 2 0 0 0 4 2.8v18.4a2 2 0 0 0 3.54 1.7l8.92-7.8a2 2 0 0 0 0-2.6Z"/>
+        <path d="M22 12H12"/>
+      </svg>
+      FastUp Courier Services
+    </a>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </header>
+
+  <div class="container">
+    <div class="top-controls">
+      <a href="dashboard.html" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left">
+          <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+        </svg>
+        Back to Dashboard
+      </a>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search Tracker Number..." />
+    </div>
+
+    <h2>Update Package</h2>
+
+    <form id="updateForm">
+      <div class="form-group">
+        <label for="packageSelect">Select Package by Tracker Number:</label>
+        <select id="packageSelect" required>
+          <option value="">-- Choose a package --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="sender_name">Sender Name</label>
+        <input type="text" id="sender_name" name="sender_name" placeholder="Sender Name" />
+      </div>
+      <div class="form-group">
+        <label for="sender_address">Sender Address</label>
+        <input type="text" id="sender_address" name="sender_address" placeholder="Sender Address" />
+      </div>
+      <div class="form-group">
+        <label for="recipient_name">Recipient Name</label>
+        <input type="text" id="recipient_name" name="recipient_name" placeholder="Recipient Name" />
+      </div>
+      <div class="form-group">
+        <label for="recipient_address">Recipient Address</label>
+        <input type="text" id="recipient_address" name="recipient_address" placeholder="Recipient Address" />
+      </div>
+      <div class="form-group">
+        <label for="location">Current Location</label>
+        <input type="text" id="location" name="location" placeholder="Location" />
+      </div>
+      <div class="form-group">
+        <label for="delivery_charge">Delivery Charge Status</label>
+        <select id="delivery_charge" name="delivery_charge">
+          <option value="paid">Paid</option>
+          <option value="not_paid">Not Paid</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="delivery_date">Delivery Date</label>
+        <input type="date" id="delivery_date" name="delivery_date" />
+      </div>
+      <div class="form-group">
+        <label for="status">Status</label>
+        <input type="text" id="status" name="status" placeholder="Status" />
+      </div>
+      <div class="form-group">
+        <label for="package_information">Package Information</label>
+        <textarea id="package_information" name="package_information" placeholder="Package Info"></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" id="updateBtn" class="btn">
+          <span class="loader" style="display: none;"></span>
+          <span class="button-label">Update Package</span>
+        </button>
+        <button type="button" id="deleteBtn" class="btn delete-btn">
+          <span class="loader" style="display: none;"></span>
+          <span class="button-label">Delete Package</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <p>Are you sure you want to delete this package?</p>
+      <div class="modal-buttons">
+        <button class="confirm-btn" onclick="confirmDelete()">Yes, Delete</button>
+        <button class="cancel-btn" onclick="document.getElementById('deleteModal').classList.remove('show')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <footer class="footer">
+    &copy; 2025 FastUp Courier Services. All rights reserved.
+  </footer>
+
+  <script>
+    // Preloader Script
+    window.addEventListener('load', () => {
+      const preloader = document.getElementById('preloader');
+      if (preloader) {
+        preloader.classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Restore scrollbar
+        setTimeout(() => {
+          preloader.style.display = 'none';
+        }, 500); // Match CSS transition duration
+      }
+    });
+
+    // Logout Script
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html'; // Redirect to login page
+    });
+
+    // Basic authentication check
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'index.html'; // Redirect to login if no token
+      }
+    });
+
+    // Toast Function
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show ' + type; // Add type class for styling
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    const token = localStorage.token;
+    const form = document.getElementById('updateForm');
+    const packageSelect = document.getElementById('packageSelect');
+    const updateBtn = document.getElementById('updateBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const deleteModal = document.getElementById('deleteModal');
+    const searchInput = document.getElementById('searchInput');
+    let trackerMap = {}; // Stores {id: tracker_number}
+    let selectedId = null; // Stores the currently selected package ID
+
+    // Helper to show/hide loader and manage button text
+    function toggleButtonLoading(button, isLoading, loadingText, defaultText) {
+      const loader = button.querySelector('.loader');
+      const label = button.querySelector('.button-label');
+
+      if (!loader || !label) {
+        console.error("Loader or label span not found in button:", button);
+        return; // Prevent error if elements are missing
+      }
+
+      if (isLoading) {
+        button.disabled = true;
+        loader.style.display = 'inline-block';
+        label.textContent = loadingText; // Change text to "Updating..." or "Deleting..."
+      } else {
+        button.disabled = false;
+        loader.style.display = 'none';
+        label.textContent = defaultText; // Restore original text like "Update Package"
+      }
+    }
+
+    async function loadPackages() {
+      packageSelect.innerHTML = '<option value="">-- Choose a package --</option>';
+      trackerMap = {};
+      try {
+        const res = await fetch('https://api.shippment.cmctradevault.com/api/packages/', { // Standardized API endpoint
+          headers: { Authorization: 'Bearer ' + token }
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          showToast(errorData.message || 'Failed to load packages.', 'error');
+          return;
+        }
+
+        const packages = await res.json();
+        if (!Array.isArray(packages)) {
+          showToast('Invalid data received for packages.', 'error');
+          return;
+        }
+
+        packages.forEach(pkg => {
+          trackerMap[pkg.id] = pkg.tracker_number;
+          const option = document.createElement('option');
+          option.value = pkg.id;
+          option.textContent = pkg.tracker_number;
+          packageSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading packages:', error);
+        showToast('Network error loading packages.', 'error');
+      }
+    }
+
+    packageSelect.onchange = async () => {
+      const id = packageSelect.value;
+      if (!id) {
+        form.reset(); // Clear form if no package selected
+        selectedId = null;
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://api.shippment.cmctradevault.com/api/packages/package/${trackerMap[id]}`, { // Use tracker_number for GET
+          headers: { Authorization: 'Bearer ' + token }
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          showToast(errorData.message || 'Failed to fetch package details.', 'error');
+          form.reset();
+          selectedId = null;
+          return;
+        }
+
+        const data = await res.json();
+        const pkg = data.package; // Assuming the package data is nested under 'package'
+        if (!pkg) {
+          showToast('Package data not found.', 'error');
+          form.reset();
+          selectedId = null;
+          return;
+        }
+
+        selectedId = id;
+        // Populate form fields
+        for (const key in pkg) {
+          const element = form.elements[key];
+          if (element) {
+            if (element.type === 'date' && pkg[key]) {
+              // Format date for input[type="date"]
+              element.value = new Date(pkg[key]).toISOString().split('T')[0];
+            } else {
+              element.value = pkg[key];
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching package details:', error);
+        showToast('Network error fetching package details.', 'error');
+        form.reset();
+        selectedId = null;
+      }
+    };
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      if (!selectedId) {
+        showToast('Please select a package first.', 'error');
+        return;
+      }
+
+      const tracker_number = trackerMap[selectedId];
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      // NO parseFloat for delivery_charge as it's an enum
+      // Remove empty fields from data object to avoid sending null/empty strings for optional fields
+      for (const key in data) {
+        if (data[key] === '') {
+          delete data[key];
+        }
+      }
+
+      toggleButtonLoading(updateBtn, true, 'Updating...', 'Update Package');
+
+      try {
+        const res = await fetch(`https://api.shippment.cmctradevault.com/api/packages/package/${tracker_number}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+        showToast(result.message || result.error, res.ok ? 'success' : 'error');
+        if (res.ok) {
+          await loadPackages(); // Reload packages to update any changes
+          packageSelect.value = selectedId; // Re-select the updated package
+          // Re-populate form to ensure consistency after update
+          packageSelect.dispatchEvent(new Event('change'));
+        }
+      } catch (error) {
+        console.error('Error updating package:', error);
+        showToast('An error occurred during update. Please try again.', 'error');
+      } finally {
+        toggleButtonLoading(updateBtn, false, 'Updating...', 'Update Package');
+      }
+    };
+
+    deleteBtn.onclick = () => {
+      if (!selectedId) {
+        showToast('Please select a package to delete.', 'error');
+        return;
+      }
+      deleteModal.classList.add('show');
+    };
+
+    async function confirmDelete() {
+      const tracker_number = trackerMap[selectedId];
+      deleteModal.classList.remove('show');
+      toggleButtonLoading(deleteBtn, true, 'Deleting...', 'Delete Package');
+
+      try {
+        const res = await fetch(`https://api.shippment.cmctradevault.com/api/packages/package/${tracker_number}`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+
+        const result = await res.json();
+        showToast(result.message || result.error, res.ok ? 'success' : 'error');
+        if (res.ok) {
+          form.reset(); // Clear form after deletion
+          selectedId = null;
+          await loadPackages(); // Reload packages
+        }
+      } catch (error) {
+        console.error('Error deleting package:', error);
+        showToast('An error occurred during deletion. Please try again.', 'error');
+      } finally {
+        toggleButtonLoading(deleteBtn, false, 'Deleting...', 'Delete Package');
+      }
+    }
+
+    searchInput.addEventListener('input', () => {
+      const filter = searchInput.value.toLowerCase();
+      Array.from(packageSelect.options).forEach(option => {
+        // Skip the default "Choose a package" option
+        if (option.value === "") {
+          option.style.display = '';
+          return;
+        }
+        const match = option.textContent.toLowerCase().includes(filter);
+        option.style.display = match ? '' : 'none';
+      });
+    });
+
+    loadPackages(); // Initial load of packages
+  </script>
+</body>
+</html>

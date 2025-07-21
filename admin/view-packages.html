@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>View All Packages | FastUp Courier Services</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4f46e5; /* Indigo 600 */
+      --primary-dark: #4338ca; /* Indigo 700 */
+      --background-light: #f8fafc; /* Gray 50 */
+      --background-medium: #e2e8f0; /* Gray 200 */
+      --text-color: #1e293b; /* Slate 800 */
+      --text-light: #64748b; /* Slate 500 */
+      --card-background: #ffffff;
+      --border-color: #e2e8f0; /* Slate 200 */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --success-color: #22c55e; /* Green 500 */
+      --error-color: #ef4444; /* Red 500 */
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-light);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: var(--text-color);
+      overflow: hidden; /* Hide scrollbar during preloader */
+    }
+
+    /* Preloader Styles */
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--background-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out;
+      opacity: 1;
+    }
+
+    #preloader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      border: 4px solid var(--background-medium);
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Header Styles */
+    .header {
+      background-color: var(--card-background);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header .logo {
+      display: flex;
+      align-items: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .header .logo svg {
+      margin-right: 0.5rem;
+      color: var(--primary-color);
+    }
+
+    .header .logout-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .header .logout-btn:hover {
+      background-color: var(--background-medium);
+      color: var(--text-color);
+    }
+
+    /* Main Content Styles */
+    .container {
+      flex-grow: 1;
+      max-width: 800px;
+      margin: 2rem auto;
+      background: var(--card-background);
+      padding: 2rem;
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: var(--text-color);
+    }
+
+    .back-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      text-decoration: none; /* For anchor tag */
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-btn:hover {
+      background-color: var(--background-medium);
+      color: var(--text-color);
+    }
+
+    #packages-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .package-card {
+      background: var(--background-light);
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .package-card strong {
+      color: var(--primary-color);
+    }
+
+    .package-card p {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .package-card .status {
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .package-card .status.pending { color: #f59e0b; } /* Amber 500 */
+    .package-card .status.in-transit { color: #3b82f6; } /* Blue 500 */
+    .package-card .status.delivered { color: #22c55e; } /* Green 500 */
+    .package-card .status.failed { color: #ef4444; } /* Red 500 */
+
+    .no-packages-message {
+      text-align: center;
+      color: var(--text-light);
+      font-style: italic;
+      padding: 2rem;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      display: none;
+      z-index: 2000;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    #toast.show {
+      opacity: 1;
+    }
+
+    #toast.success {
+      background-color: var(--success-color);
+    }
+
+    #toast.error {
+      background-color: var(--error-color);
+    }
+
+    /* Footer Styles */
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: auto;
+      color: var(--text-light);
+      font-size: 0.875rem;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--card-background);
+    }
+  </style>
+</head>
+<body>
+  <div id="preloader">
+    <div class="spinner"></div>
+  </div>
+
+  <header class="header">
+    <a href="dashboard.html" class="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package-2">
+        <path d="M16.46 8.9L7.54 1.1A2 2 0 0 0 4 2.8v18.4a2 2 0 0 0 3.54 1.7l8.92-7.8a2 2 0 0 0 0-2.6Z"/>
+        <path d="M22 12H12"/>
+      </svg>
+      FastUp Courier Services
+    </a>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </header>
+
+  <div class="container">
+    <a href="dashboard.html" class="back-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left">
+        <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+      </svg>
+      Back to Dashboard
+    </a>
+    <h2>All Packages</h2>
+    <div id="packages-list">
+      <!-- Packages will be loaded here -->
+      <p class="no-packages-message" id="loadingMessage">Loading packages...</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <footer class="footer">
+    &copy; 2025 FastUp Courier Services. All rights reserved.
+  </footer>
+
+  <script>
+    // Preloader Script
+    window.addEventListener('load', () => {
+      const preloader = document.getElementById('preloader');
+      if (preloader) {
+        preloader.classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Restore scrollbar
+        setTimeout(() => {
+          preloader.style.display = 'none';
+        }, 500); // Match CSS transition duration
+      }
+    });
+
+    // Logout Script
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html'; // Redirect to login page
+    });
+
+    // Basic authentication check
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'index.html'; // Redirect to login if no token
+      }
+    });
+
+    // Toast Function
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show ' + type; // Add type class for styling
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('packages-list');
+      const loadingMessage = document.getElementById('loadingMessage');
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        loadingMessage.textContent = 'Please log in to view packages.';
+        return;
+      }
+
+      try {
+        // Step 1: Fetch list of IDs and tracker numbers
+        const listRes = await fetch('https://api.shippment.cmctradevault.com/api/packages/', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+
+        if (!listRes.ok) {
+          const errorData = await listRes.json();
+          loadingMessage.textContent = errorData.message || 'Failed to load package list.';
+          showToast(errorData.message || 'Failed to load package list.', 'error');
+          return;
+        }
+
+        const packageList = await listRes.json();
+        loadingMessage.style.display = 'none'; // Hide loading message
+
+        if (Array.isArray(packageList) && packageList.length > 0) {
+          // Step 2: Fetch full details for each package
+          const fetchDetailsPromises = packageList.map(async (pkgSummary) => {
+            try {
+              const detailRes = await fetch(`https://api.shippment.cmctradevault.com/api/packages/package/${pkgSummary.tracker_number}`, {
+                headers: { Authorization: 'Bearer ' + token }
+              });
+
+              if (!detailRes.ok) {
+                const errorData = await detailRes.json();
+                console.error(`Failed to fetch details for tracker ${pkgSummary.tracker_number}:`, errorData.message);
+                return null; // Return null for failed fetches
+              }
+              const detailData = await detailRes.json();
+              return detailData.package; // Assuming full package data is under 'package' key
+            } catch (error) {
+              console.error(`Network error fetching details for tracker ${pkgSummary.tracker_number}:`, error);
+              return null;
+            }
+          });
+
+          const detailedPackages = (await Promise.all(fetchDetailsPromises)).filter(pkg => pkg !== null);
+
+          if (detailedPackages.length > 0) {
+            detailedPackages.forEach(pkg => {
+              const div = document.createElement('div');
+              div.className = 'package-card';
+
+              // Determine status class for styling
+              let statusClass = '';
+              if (pkg.status) {
+                const lowerStatus = pkg.status.toLowerCase();
+                if (lowerStatus.includes('pending')) statusClass = 'pending';
+                else if (lowerStatus.includes('transit')) statusClass = 'in-transit';
+                else if (lowerStatus.includes('delivered')) statusClass = 'delivered';
+                else if (lowerStatus.includes('failed')) statusClass = 'failed';
+              }
+
+              div.innerHTML = `
+                <p><strong>Tracker Number:</strong> ${pkg.tracker_number || 'N/A'}</p>
+                <p><strong>Sender:</strong> ${pkg.sender_name || 'N/A'} (${pkg.sender_address || 'N/A'})</p>
+                <p><strong>Recipient:</strong> ${pkg.recipient_name || 'N/A'} (${pkg.recipient_address || 'N/A'})</p>
+                <p><strong>Current Location:</strong> ${pkg.location || 'N/A'}</p>
+                <p><strong>Delivery Charge:</strong> ${pkg.delivery_charge ? `$${parseFloat(pkg.delivery_charge).toFixed(2)}` : 'N/A'}</p>
+                <p><strong>Delivery Date:</strong> ${pkg.delivery_date ? new Date(pkg.delivery_date).toLocaleDateString() : 'N/A'}</p>
+                <p class="status ${statusClass}"><strong>Status:</strong> ${pkg.status || 'N/A'}</p>
+                <p><strong>Package Info:</strong> ${pkg.package_information || 'N/A'}</p>
+              `;
+              container.appendChild(div);
+            });
+          } else {
+            container.innerHTML = '<p class="no-packages-message">No detailed package information available.</p>';
+          }
+        } else {
+          container.innerHTML = '<p class="no-packages-message">No packages found.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching packages:', error);
+        loadingMessage.textContent = 'An error occurred while fetching packages.';
+        showToast('Network error fetching packages.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
